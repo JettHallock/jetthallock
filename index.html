@@ -1,30 +1,367 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Our Little World</title>
-  <style>
-    body {
-      font-family: Georgia, serif;
-      background: #f8f4ee;
-      color: #514638;
-      text-align: center;
-      padding: 80px 20px;
-    }
-    h1 {
-      font-size: 2.5rem;
-      font-weight: normal;
-    }
-    p {
-      line-height: 1.8;
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#f7f2ea">
+<title>Our Little World</title>
+<style>
+  :root {
+    --paper: #f7f2ea;
+    --paper-deep: #eee5d8;
+    --card: #fffdf9;
+    --ink: #40372f;
+    --muted: #81766a;
+    --accent: #8b6c52;
+    --accent-dark: #644b38;
+    --line: #e5dacb;
+    --shadow: 0 12px 30px rgba(73, 54, 37, .08);
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background:
+      radial-gradient(ellipse at top left, rgba(224, 206, 181, .28), transparent 34rem),
+      var(--paper);
+    color: var(--ink);
+    font-family: ui-serif, Georgia, "Times New Roman", serif;
+    min-height: 100vh;
+  }
+  button { font: inherit; }
+  .page { width: min(100% - 32px, 1000px); margin: 0 auto; padding: 42px 0 56px; }
+  header { text-align: center; margin-bottom: 36px; }
+  .eyebrow {
+    font: 700 .72rem/1.4 system-ui, sans-serif; letter-spacing: .19em;
+    text-transform: uppercase; color: var(--accent); margin-bottom: 13px;
+  }
+  h1 { font-size: clamp(2.4rem, 6vw, 4.3rem); font-weight: 400; letter-spacing: -.045em; margin: 0; }
+  .subtitle { color: var(--muted); font: 1rem/1.65 system-ui, sans-serif; margin: 12px auto 0; max-width: 520px; }
+  .date-pill {
+    display: inline-flex; align-items: center; gap: 8px; margin-top: 19px;
+    padding: 8px 13px; border: 1px solid var(--line); border-radius: 99px;
+    color: var(--muted); background: rgba(255,253,249,.7);
+    font: .8rem system-ui, sans-serif;
+  }
+  .section { margin-top: 36px; }
+  .section-heading { display: flex; justify-content: space-between; align-items: end; gap: 16px; margin-bottom: 16px; }
+  .section-heading h2 { margin: 0; font-size: clamp(1.5rem, 4vw, 2rem); font-weight: 400; }
+  .section-heading p { margin: 5px 0 0; color: var(--muted); font: .9rem/1.5 system-ui, sans-serif; }
+  .section-kicker { color: var(--accent); font: 700 .7rem system-ui, sans-serif; letter-spacing: .14em; text-transform: uppercase; margin-bottom: 7px; }
+  .cards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; perspective: 1200px; }
+  .flip-card { height: 245px; cursor: pointer; border: 0; background: transparent; padding: 0; text-align: left; perspective: 1000px; color: inherit; }
+  .flip-inner { position: relative; width: 100%; height: 100%; transition: transform .65s cubic-bezier(.2,.75,.2,1); transform-style: preserve-3d; }
+  .flip-card.flipped .flip-inner { transform: rotateY(180deg); }
+  .face {
+    position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden;
+    border: 1px solid var(--line); border-radius: 19px; padding: 20px 18px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;
+    box-shadow: var(--shadow); overflow: hidden;
+  }
+  .front { background: linear-gradient(145deg, #fffdf9, #eee3d4); }
+  .front::before { content: ""; position: absolute; width: 140px; height: 140px; border: 1px solid rgba(139,108,82,.16); border-radius: 50%; top: -66px; right: -48px; }
+  .front::after { content: ""; position: absolute; width: 95px; height: 95px; border: 1px solid rgba(139,108,82,.13); border-radius: 50%; bottom: -45px; left: -30px; }
+  .card-number { font: 700 .7rem system-ui, sans-serif; letter-spacing: .16em; color: var(--accent); text-transform: uppercase; margin-bottom: 17px; }
+  .front-title { font-size: clamp(1.15rem, 2.3vw, 1.45rem); font-weight: 400; line-height: 1.25; max-width: 220px; }
+  .back-prompt { font-size: 1.05rem; line-height: 1.5; }
+  .tap { font: .76rem system-ui, sans-serif; color: var(--muted); margin-top: 22px; }
+  .back { transform: rotateY(180deg); background: var(--card); justify-content: flex-start; align-items: flex-start; text-align: left; }
+  .back .back-label { color: var(--accent); font: 700 .67rem system-ui, sans-serif; letter-spacing: .14em; text-transform: uppercase; margin-bottom: 12px; }
+  .back p { margin: 0; font-size: 1.05rem; line-height: 1.5; }
+  .back .tap { margin-top: auto; align-self: center; }
+  .tip { margin: 12px 2px 0; color: var(--muted); font: .82rem/1.5 system-ui, sans-serif; }
+  .question-panel {
+    background: rgba(255,253,249,.82); border: 1px solid var(--line); border-radius: 22px;
+    box-shadow: var(--shadow); padding: clamp(22px, 5vw, 42px); text-align: center;
+  }
+  .question-mark { width: 44px; height: 44px; margin: 0 auto 18px; display: grid; place-items: center; border-radius: 50%; background: var(--paper-deep); color: var(--accent); font-size: 1.5rem; }
+  .question-category { color: var(--accent); font: 700 .7rem system-ui, sans-serif; letter-spacing: .16em; text-transform: uppercase; margin-bottom: 13px; }
+  .daily-question { max-width: 720px; margin: 0 auto; font-size: clamp(1.45rem, 4vw, 2.35rem); line-height: 1.32; font-weight: 400; }
+  .question-note { color: var(--muted); font: .88rem/1.6 system-ui, sans-serif; max-width: 550px; margin: 17px auto 0; }
+  .footer { text-align: center; color: var(--muted); font: .78rem/1.7 system-ui, sans-serif; margin-top: 36px; }
+  .footer strong { color: var(--accent-dark); font-weight: 600; }
+  button:focus-visible { outline: 3px solid #b99573; outline-offset: 4px; border-radius: 20px; }
+  @media (hover: hover) {
+    .flip-card:hover:not(.flipped) .flip-inner { transform: translateY(-3px); }
+    .flip-card.flipped:hover .flip-inner { transform: rotateY(180deg) translateY(-3px); }
+  }
+  @media (max-width: 680px) {
+    .page { width: min(100% - 22px, 520px); padding-top: 30px; }
+    header { margin-bottom: 28px; }
+    .cards { grid-template-columns: 1fr; gap: 11px; }
+    .flip-card { height: 150px; }
+    .face { padding: 17px 20px; }
+    .card-number { margin-bottom: 9px; }
+    .tap { margin-top: 12px; }
+    .back { padding: 18px 20px; }
+    .back p { font-size: 1rem; }
+    .section { margin-top: 29px; }
+    .section-heading { align-items: start; flex-direction: column; gap: 6px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { transition-duration: .01ms !important; scroll-behavior: auto !important; }
+  }
+</style>
 </head>
 <body>
-  <h1>Our Little World</h1>
-  <p>A little space to discover something new about each other.</p>
-  <p>Our daily questions are coming soon.</p>
+<main class="page">
+  <header>
+    <div class="eyebrow">A little space for two</div>
+    <h1>Our Little World</h1>
+    <p class="subtitle">A small daily invitation to be curious, ask better questions, and keep discovering each other.</p>
+    <div class="date-pill"><span aria-hidden="true">✦</span><span id="today-date">Today's questions</span><span aria-hidden="true">✦</span></div>
+  </header>
+
+  <section class="section" aria-labelledby="ask-heading">
+    <div class="section-heading">
+      <div>
+        <div class="section-kicker">Daily activity · 01</div>
+        <h2 id="ask-heading">Ask Them</h2>
+        <p>Choose a card to reveal a prompt for a question you can ask each other.</p>
+      </div>
+    </div>
+    <div class="cards" id="mystery-cards" aria-label="Three mystery topic cards"></div>
+    <p class="tip">The front gives you the topic. Flip the card to reveal what to ask about. Make the question your own.</p>
+  </section>
+
+  <section class="section" aria-labelledby="curiosity-heading">
+    <div class="section-heading">
+      <div>
+        <div class="section-kicker">Daily activity · 02</div>
+        <h2 id="curiosity-heading">The Curiosity Deck</h2>
+        <p>One question for both of you to answer today.</p>
+      </div>
+    </div>
+    <div class="question-panel">
+      <div class="question-mark" aria-hidden="true">?</div>
+      <div class="question-category" id="curiosity-category">Today's question</div>
+      <p class="daily-question" id="curiosity-question">Loading today's question…</p>
+      <p class="question-note">Take turns answering, then ask each other follow-up questions. There's no rush to have the same answer.</p>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <strong>Our Little World</strong><br>
+    New selections each day at midnight Eastern Time.<br>
+    This page doesn't save answers or personal information.
+  </footer>
+</main>
+<script>
+/*
+  Daily selections are calculated from the Eastern Time calendar date.
+  Everyone opening this same version of the page sees the same selections.
+  No server, account, tracking, or database is used.
+*/
+const mysteryPrompts = [
+  { topic: "Relationship Preferences", prompt: "Ask your partner something they wish their future spouse would do for them often." },
+  { topic: "Childhood & Memories", prompt: "Ask your partner about a childhood memory that still makes them smile." },
+  { topic: "Faith & Spirituality", prompt: "Ask your partner what they hope praying together as a married couple would look like." },
+  { topic: "Emotional Connection", prompt: "Ask your partner what helps them feel understood when they're upset." },
+  { topic: "Marriage & Family", prompt: "Ask your partner about a tradition they'd love to establish in their future family." },
+  { topic: "Fun & Hypotheticals", prompt: "Ask your partner what ridiculous activity they'd want the two of you to try together." },
+  { topic: "Conflict & Forgiveness", prompt: "Ask your partner what helps them feel safe reconciling after an argument." },
+  { topic: "Affection & Romance", prompt: "Ask your partner what small romantic gesture would mean a lot to them." },
+  { topic: "Dreams & Ambitions", prompt: "Ask your partner about a dream they hope they never give up on." },
+  { topic: "Everyday Life", prompt: "Ask your partner what part of an ordinary day they look forward to most." },
+  { topic: "Friendship", prompt: "Ask your partner what makes them feel that someone is truly a close friend." },
+  { topic: "Communication", prompt: "Ask your partner how they prefer someone to bring up a difficult topic with them." },
+  { topic: "Values & Character", prompt: "Ask your partner what quality they most want to grow in over the next few years." },
+  { topic: "Catholic Marriage", prompt: "Ask your partner what they think helps a married couple keep Christ at the center of their life." },
+  { topic: "Service & Generosity", prompt: "Ask your partner what kind of service or charitable work they'd enjoy doing together." },
+  { topic: "Family Relationships", prompt: "Ask your partner what they appreciate most about the way their family shows care." },
+  { topic: "Stress & Support", prompt: "Ask your partner what kind of support is most helpful when life feels overwhelming." },
+  { topic: "Personal Growth", prompt: "Ask your partner about something they've changed their mind about as they've grown." },
+  { topic: "Quality Time", prompt: "Ask your partner what a genuinely restful day together would look like." },
+  { topic: "Trust & Honesty", prompt: "Ask your partner what helps them build trust with someone over time." },
+  { topic: "Money & Stewardship", prompt: "Ask your partner what financial habit or value they hope to bring into marriage." },
+  { topic: "Home & Lifestyle", prompt: "Ask your partner what would make a home feel peaceful and welcoming to them." },
+  { topic: "Faith in Daily Life", prompt: "Ask your partner what part of Catholic life they most want to make a natural part of their home." },
+  { topic: "Handling Differences", prompt: "Ask your partner how they'd hope to handle a serious disagreement where neither person changes their mind quickly." },
+  { topic: "Encouragement", prompt: "Ask your partner what kind of encouragement helps them keep going when they're discouraged." },
+  { topic: "Favorite Things", prompt: "Ask your partner about a small, inexpensive thing that reliably makes them happy." },
+  { topic: "Boundaries & Respect", prompt: "Ask your partner what helps them feel that their boundaries are respected." },
+  { topic: "Parenthood & Family Life", prompt: "Ask your partner what quality they'd hope to model for children, if you both were called to parenthood." },
+  { topic: "Apologies & Repair", prompt: "Ask your partner what makes an apology feel sincere to them." },
+  { topic: "Adventure", prompt: "Ask your partner about a place they'd love to explore and what draws them to it." },
+  { topic: "Meaning & Purpose", prompt: "Ask your partner what makes a life feel meaningful beyond achievement or success." },
+  { topic: "Prayer & Discernment", prompt: "Ask your partner how they'd like to approach prayer when making an important decision as a couple." },
+  { topic: "Attention & Listening", prompt: "Ask your partner what makes them feel that someone is really listening to them." },
+  { topic: "Traditions", prompt: "Ask your partner what holiday or yearly tradition they'd love to share with a future family." },
+  { topic: "Playfulness", prompt: "Ask your partner what kind of silly tradition the two of you could start." },
+  { topic: "Difficult Seasons", prompt: "Ask your partner what they hope a spouse would understand about them during a difficult season." },
+  { topic: "Decision-Making", prompt: "Ask your partner how they prefer to make big decisions: talking things through, taking time alone, seeking advice, or another way." },
+  { topic: "Community & Church", prompt: "Ask your partner what kind of parish or faith community they hope to be part of as an adult." },
+  { topic: "Admiration", prompt: "Ask your partner what character trait in another person tends to earn their lasting admiration." },
+  { topic: "Personal Space", prompt: "Ask your partner how they balance closeness with having time to themselves." },
+  { topic: "Learning & Curiosity", prompt: "Ask your partner what subject they'd love to learn more about with you." },
+  { topic: "Romantic Expectations", prompt: "Ask your partner what makes them feel intentionally chosen and pursued in a relationship." },
+  { topic: "Forgiveness & Mercy", prompt: "Ask your partner what helps them move toward forgiveness while still addressing a problem honestly." },
+  { topic: "Work & Calling", prompt: "Ask your partner how they hope work, vocation, and family life could fit together in the future." },
+  { topic: "Technology & Attention", prompt: "Ask your partner what boundaries around phones or screens might help protect quality time together." },
+  { topic: "Hospitality", prompt: "Ask your partner whether they'd enjoy having people over often, and what kind of gatherings they'd like to host." },
+  { topic: "Intimacy & Trust", prompt: "Ask your partner what helps them feel emotionally safe enough to be vulnerable." },
+  { topic: "Catholic Practices", prompt: "Ask your partner which Catholic practice or devotion they'd be interested in sharing as a couple." },
+  { topic: "Aspirations for Marriage", prompt: "Ask your partner what they hope will make their future marriage different from simply living together as good friends." },
+  { topic: "Being Known", prompt: "Ask your partner what is something people don't usually think to ask them, but they enjoy talking about." },
+  { topic: "Handling Change", prompt: "Ask your partner what helps them adjust when a plan or expectation changes unexpectedly." },
+  { topic: "Gratitude", prompt: "Ask your partner what ordinary part of their life they're especially grateful for right now." },
+  { topic: "Shared Responsibility", prompt: "Ask your partner what makes sharing household responsibilities feel fair and loving." },
+  { topic: "Faith & Doubt", prompt: "Ask your partner what kind of support they'd appreciate if they were going through a season of spiritual dryness or doubt." },
+  { topic: "Growing Together", prompt: "Ask your partner what they hope you could help each other grow in over the years." },
+  { topic: "A Perfect Ordinary Evening", prompt: "Ask your partner to describe their ideal ordinary evening with a future spouse." },
+  { topic: "Handling Criticism", prompt: "Ask your partner how they'd prefer a loved one to raise a concern without making them feel attacked." },
+  { topic: "Sacrifice & Generosity", prompt: "Ask your partner what a healthy, loving sacrifice in marriage might look like in everyday life." },
+  { topic: "Humor", prompt: "Ask your partner what kind of humor always gets them, even when they're in a bad mood." },
+  { topic: "Life Priorities", prompt: "Ask your partner which three priorities they'd want to protect even during a very busy season of life." }
+];
+
+const curiosityQuestions = [
+  { category: "Fun & Personality", question: "What is a very specific, slightly ridiculous thing that can instantly improve your mood?" },
+  { category: "Childhood & Memories", question: "What is a childhood memory you wish you could step back into for just ten minutes?" },
+  { category: "Faith & Spirituality", question: "What has most helped your faith become personal rather than simply something you believe intellectually?" },
+  { category: "Marriage Compatibility", question: "When you imagine a healthy Catholic marriage, what do you think the two spouses should be able to count on each other for every day?" },
+  { category: "Emotional Connection", question: "When you're having a difficult day, do you usually want comfort, practical help, space, or a mix of these?" },
+  { category: "Fun & Hypotheticals", question: "If we had to open a tiny business together for one year, what would it be and why?" },
+  { category: "Communication", question: "What makes a difficult conversation feel safe and productive to you?" },
+  { category: "Faith in Daily Life", question: "What is one way you'd like faith to shape the ordinary rhythm of your future home?" },
+  { category: "Dreams & Ambitions", question: "What is something you would regret never trying, even if you were afraid of failing?" },
+  { category: "Affection & Romance", question: "What is a small, thoughtful gesture that makes you feel especially cared for?" },
+  { category: "Values & Character", question: "Which virtue do you most want to grow in, and what makes it difficult to practice?" },
+  { category: "Family & Community", question: "What role would you ideally like extended family and close friends to play in your married life?" },
+  { category: "Conflict & Repair", question: "After a disagreement, what helps you feel ready to reconnect?" },
+  { category: "Everyday Life", question: "What would a genuinely satisfying ordinary Saturday look like for you?" },
+  { category: "Catholic Marriage", question: "How do you think a couple can make decisions together while still respecting each other's conscience and responsibilities?" },
+  { category: "Personal Growth", question: "What is one belief or assumption about life that has changed for you in recent years?" },
+  { category: "Playfulness", question: "What completely unnecessary competition do you think we'd have way too much fun taking seriously?" },
+  { category: "Money & Stewardship", question: "What did your upbringing teach you, positively or negatively, about money?" },
+  { category: "Marriage & Family", question: "What does being a good teammate in marriage look like when both people are tired or stressed?" },
+  { category: "Prayer", question: "What kind of prayer together would feel natural and sustainable for you as a couple?" },
+  { category: "Friendship", question: "What makes you feel close to someone even when you haven't spoken for a while?" },
+  { category: "Emotional Awareness", question: "What feeling is hardest for you to explain to other people?" },
+  { category: "Home & Lifestyle", question: "Would you prefer a home that is often lively with visitors or mostly quiet and private, and why?" },
+  { category: "Faith & Discernment", question: "When facing an important decision, how do you distinguish your own preference from what you believe God may be asking of you?" },
+  { category: "Shared Experiences", question: "What is something new you'd love for us to learn or attempt together?" },
+  { category: "Trust & Honesty", question: "What small, everyday behavior builds trust more than people might realize?" },
+  { category: "Handling Stress", question: "What are the signs that you're getting overwhelmed, even if you haven't said so out loud?" },
+  { category: "Catholic Life", question: "Which part of the liturgical year or a Catholic feast day would you most enjoy making special in a future home?" },
+  { category: "Romantic Expectations", question: "What helps you feel that a relationship is being intentionally nurtured rather than simply maintained?" },
+  { category: "Meaning & Purpose", question: "What do you hope people feel after spending time with you?" },
+  { category: "Family & Parenthood", question: "What value would you most want to pass on to children, if you were called to parenthood?" },
+  { category: "Forgiveness", question: "How do you understand the difference between forgiving someone and rebuilding trust with them?" },
+  { category: "Work & Vocation", question: "What would a good balance between meaningful work, rest, faith, and family look like to you?" },
+  { category: "Personal Space", question: "How can two people stay close while also giving each other healthy room to grow individually?" },
+  { category: "Traditions", question: "What tradition from your own life would you like to carry into the future, and what new one would you invent?" },
+  { category: "Catholic Marriage", question: "What do you think helps spouses remain united when they approach a serious moral or practical question differently?" },
+  { category: "Listening & Understanding", question: "What is something you wish people understood before giving you advice?" },
+  { category: "Hopes for the Future", question: "If life went well in a quiet, ordinary way over the next five years, what would you hope it looked like?" },
+  { category: "Joy & Gratitude", question: "What is something ordinary in your life right now that you think future-you might miss?" },
+  { category: "Shared Responsibility", question: "What does fairness look like when two people contribute different kinds of work to a household?" },
+  { category: "Faith Through Difficulty", question: "What kind of support would help you if prayer felt difficult or God seemed distant for a while?" },
+  { category: "Affection & Care", question: "When you feel loved, what do you tend to notice first: words, actions, time, physical affection, gifts, or something else?" },
+  { category: "Fun & Personality", question: "What harmless opinion do you hold with completely unreasonable confidence?" },
+  { category: "Marriage Compatibility", question: "How should a couple handle a decision when one person feels strongly and the other feels uncertain?" },
+  { category: "Conflict & Communication", question: "When you're upset, what kind of response from another person tends to make things worse, even if they mean well?" },
+  { category: "Service & Generosity", question: "What is one way you'd enjoy serving others together as a couple?" },
+  { category: "Dreams & Fears", question: "What is a hope you have that feels exciting and a little intimidating at the same time?" },
+  { category: "Catholic Values", question: "What does living out your faith with integrity look like when it's inconvenient or unpopular?" },
+  { category: "Growing Together", question: "How would you want us to handle it if one of us changed significantly in our interests, goals, or beliefs over time?" },
+  { category: "Love & Commitment", question: "What do you think is the difference between feeling in love and actively choosing to love someone?" },
+  { category: "Everyday Connection", question: "What small daily ritual do you think could help a couple stay connected during a busy season?" },
+  { category: "Family Relationships", question: "What did you learn about love from seeing the relationships around you growing up?" },
+  { category: "Boundaries & Respect", question: "What does respecting each other's boundaries look like when one person doesn't fully understand the other's need?" },
+  { category: "Faith & Community", question: "How important is it to you that a future spouse shares not only your faith, but also participates in a faith community with you?" },
+  { category: "Intimacy & Trust", question: "What helps you feel safe being honest about a need or insecurity in a close relationship?" },
+  { category: "Aspirations for Marriage", question: "What do you hope marriage would help you become—not just what do you hope to receive from it?" },
+  { category: "Decision-Making", question: "When you have a big decision to make, what helps you think clearly and feel at peace with it?" },
+  { category: "Play & Adventure", question: "Would you rather plan a trip down to the details or arrive with a loose plan and discover things as you go?" },
+  { category: "Gratitude", question: "Who has influenced the kind of person you want to be, and what did they show you?" },
+  { category: "Hope & Resilience", question: "What helps you keep going when progress is slow and you can't yet see the outcome?" }
+];
+
+// Small deterministic pseudo-random generator. Same seed = same sequence.
+function seededRandom(seedText) {
+  let seed = 2166136261;
+  for (let i = 0; i < seedText.length; i++) {
+    seed ^= seedText.charCodeAt(i);
+    seed = Math.imul(seed, 16777619);
+  }
+  return function() {
+    seed += 0x6D2B79F5;
+    let t = seed;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+function shuffleWithSeed(items, seedText) {
+  const result = items.slice();
+  const rand = seededRandom(seedText);
+  for (let i = result.length - 1; i > 0; i--) {
+    const j = Math.floor(rand() * (i + 1));
+    [result[i], result[j]] = [result[j], result[i]];
+  }
+  return result;
+}
+function easternDateKey() {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone: "America/New_York",
+    year: "numeric", month: "2-digit", day: "2-digit"
+  }).formatToParts(new Date());
+  const value = Object.fromEntries(parts.map(p => [p.type, p.value]));
+  return `${value.year}-${value.month}-${value.day}`;
+}
+function formatEasternDate() {
+  return new Intl.DateTimeFormat("en-US", {
+    timeZone: "America/New_York", weekday: "long", month: "long", day: "numeric"
+  }).format(new Date());
+}
+function renderDailyContent() {
+  const day = easternDateKey();
+  document.getElementById("today-date").textContent = formatEasternDate() + " · Eastern Time";
+  const dailyMystery = shuffleWithSeed(mysteryPrompts, "mystery-" + day).slice(0, 3);
+  const cardRoot = document.getElementById("mystery-cards");
+  cardRoot.innerHTML = "";
+  dailyMystery.forEach((item, index) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "flip-card";
+    button.setAttribute("aria-label", `Mystery card ${index + 1}: reveal ${item.topic}`);
+    button.setAttribute("aria-pressed", "false");
+    button.innerHTML = `
+      <span class="flip-inner">
+        <span class="face front">
+          <span class="card-number">Mystery card ${index + 1}</span>
+          <span class="front-title"></span>
+          <span class="tap">Tap to reveal ↗</span>
+        </span>
+        <span class="face back">
+          <span class="back-label"></span>
+          <span class="back-prompt"></span>
+          <span class="tap">Tap to turn back</span>
+        </span>
+      </span>`;
+    button.querySelector(".front-title").textContent = item.topic;
+    button.querySelector(".back-label").textContent = item.topic;
+    button.querySelector(".back-prompt").textContent = item.prompt;
+    button.addEventListener("click", () => {
+      const isFlipped = button.classList.toggle("flipped");
+      button.setAttribute("aria-pressed", String(isFlipped));
+    });
+    cardRoot.appendChild(button);
+  });
+  const dailyQuestion = shuffleWithSeed(curiosityQuestions, "curiosity-" + day)[0];
+  document.getElementById("curiosity-category").textContent = dailyQuestion.category;
+  document.getElementById("curiosity-question").textContent = dailyQuestion.question;
+}
+renderDailyContent();
+// If the page stays open across midnight, check the Eastern date periodically.
+let displayedDay = easternDateKey();
+setInterval(() => {
+  const currentDay = easternDateKey();
+  if (currentDay !== displayedDay) {
+    displayedDay = currentDay;
+    renderDailyContent();
+  }
+}, 30000);
+</script>
 </body>
 </html>
