@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#f7f2ea">
-<title>Our Little World</title>
+<title>Jett and Celia</title>
 <style>
   :root {
     --paper: #f7f2ea;
@@ -30,6 +30,9 @@
   button { font: inherit; }
   .page { width: min(100% - 32px, 1000px); margin: 0 auto; padding: 42px 0 56px; }
   header { text-align: center; margin-bottom: 36px; }
+  .verse { max-width: 760px; margin: 0 auto 22px; padding: 0 12px; }
+  .verse-text { font-size: clamp(1rem, 2.3vw, 1.25rem); line-height: 1.6; font-style: italic; }
+  .verse-ref { margin-top: 7px; color: var(--accent); font: 700 .72rem/1.5 system-ui, sans-serif; letter-spacing: .08em; }
   .eyebrow {
     font: 700 .72rem/1.4 system-ui, sans-serif; letter-spacing: .19em;
     text-transform: uppercase; color: var(--accent); margin-bottom: 13px;
@@ -42,10 +45,19 @@
     color: var(--muted); background: rgba(255,253,249,.7);
     font: .8rem system-ui, sans-serif;
   }
+  .countdown { text-align: center; margin: 10px auto 0; }
+  .countdown-clock { color: var(--accent-dark); font: 600 .9rem/1.4 ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: .12em; font-variant-numeric: tabular-nums; }
+  .countdown-caption { color: var(--muted); font: .7rem/1.5 system-ui, sans-serif; letter-spacing: .04em; margin-top: 2px; }
+  .quiet-corner { position: fixed; z-index: 10; bottom: 0; width: 34px; height: 34px; border: 0; padding: 0; display: grid; place-items: center; color: var(--paper-deep); background: transparent; opacity: .5; font-size: 12px; cursor: pointer; transition: color .2s ease, opacity .2s ease; }
+  .quiet-left { left: 0; }
+  .quiet-right { right: 0; }
+  .quiet-corner:hover, .quiet-corner:focus-visible { color: var(--accent); opacity: 1; background: rgba(255,253,249,.65); }
   .section { margin-top: 36px; }
-  .section-heading { display: flex; justify-content: space-between; align-items: end; gap: 16px; margin-bottom: 16px; }
+  .section-heading { display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 6px; margin-bottom: 20px; text-align: center; }
   .section-heading h2 { margin: 0; font-size: clamp(1.5rem, 4vw, 2rem); font-weight: 400; }
-  .section-heading p { margin: 5px 0 0; color: var(--muted); font: .9rem/1.5 system-ui, sans-serif; }
+  .section-heading p { margin: 5px 0 0; color: var(--muted); font: .9rem/1.5 system-ui, sans-serif; max-width: 650px; }
+  .flip-inner { display: block; }
+  .flip-card { text-align: center; }
   .section-kicker { color: var(--accent); font: 700 .7rem system-ui, sans-serif; letter-spacing: .14em; text-transform: uppercase; margin-bottom: 7px; }
   .cards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; perspective: 1200px; }
   .flip-card { height: 245px; cursor: pointer; border: 0; background: transparent; padding: 0; text-align: left; perspective: 1000px; color: inherit; }
@@ -68,7 +80,7 @@
   .back .back-label { color: var(--accent); font: 700 .67rem system-ui, sans-serif; letter-spacing: .14em; text-transform: uppercase; margin-bottom: 12px; }
   .back p { margin: 0; font-size: 1.05rem; line-height: 1.5; }
   .back .tap { margin-top: auto; align-self: center; }
-  .tip { margin: 12px 2px 0; color: var(--muted); font: .82rem/1.5 system-ui, sans-serif; }
+  .tip { margin: 12px 2px 0; color: var(--muted); font: .82rem/1.5 system-ui, sans-serif; text-align: center; }
   .question-panel {
     background: rgba(255,253,249,.82); border: 1px solid var(--line); border-radius: 22px;
     box-shadow: var(--shadow); padding: clamp(22px, 5vw, 42px); text-align: center;
@@ -95,7 +107,7 @@
     .back { padding: 18px 20px; }
     .back p { font-size: 1rem; }
     .section { margin-top: 29px; }
-    .section-heading { align-items: start; flex-direction: column; gap: 6px; }
+    .section-heading { align-items: center; flex-direction: column; gap: 6px; }
   }
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { transition-duration: .01ms !important; scroll-behavior: auto !important; }
@@ -105,10 +117,16 @@
 <body>
 <main class="page">
   <header>
-    <div class="eyebrow">A little space for two</div>
-    <h1>Our Little World</h1>
-    <p class="subtitle">A small daily invitation to be curious, ask better questions, and keep discovering each other.</p>
+    <div class="verse">
+      <div class="verse-text" id="verse-text">“Let all your things be done in charity.”</div>
+      <div class="verse-ref" id="verse-ref">1 Corinthians 16:14 · Douay-Rheims</div>
+    </div>
+    <h1>Jett and Celia</h1>
     <div class="date-pill"><span aria-hidden="true">✦</span><span id="today-date">Today's questions</span><span aria-hidden="true">✦</span></div>
+    <div class="countdown" aria-live="off">
+      <div class="countdown-clock" id="countdown-clock">00:00:00</div>
+      <div class="countdown-caption">Time until new prompts</div>
+    </div>
   </header>
 
   <section class="section" aria-labelledby="ask-heading">
@@ -116,11 +134,11 @@
       <div>
         <div class="section-kicker">Daily activity · 01</div>
         <h2 id="ask-heading">Ask Them</h2>
-        <p>Choose a card to reveal a prompt for a question you can ask each other.</p>
+        <p>Pick a topic card to reveal a question to ask the other person.</p>
       </div>
     </div>
     <div class="cards" id="mystery-cards" aria-label="Three mystery topic cards"></div>
-    <p class="tip">The front gives you the topic. Flip the card to reveal what to ask about. Make the question your own.</p>
+    <p class="tip">Feel free to make changes to the question, but keep the topic of your chosen card.</p>
   </section>
 
   <section class="section" aria-labelledby="curiosity-heading">
@@ -140,17 +158,82 @@
   </section>
 
   <footer class="footer">
-    <strong>Our Little World</strong><br>
+    <strong>Jett and Celia</strong><br>
     New selections each day at midnight Eastern Time.<br>
     This page doesn't save answers or personal information.
   </footer>
 </main>
+<button class="quiet-corner quiet-left" id="refresh-activity-01" type="button" aria-label="Show three different Activity 01 prompts" title="Show three different prompts">✦</button>
+<button class="quiet-corner quiet-right" id="refresh-activity-02" type="button" aria-label="Show a different Activity 02 question" title="Show a different question">✧</button>
 <script>
 /*
   Daily selections are calculated from the Eastern Time calendar date.
   Everyone opening this same version of the page sees the same selections.
   No server, account, tracking, or database is used.
 */
+const bibleVerses = [
+  { text: "Love is patient, love is kind.", ref: "1 Corinthians 13:4 · NIV" },
+  { text: "Do everything in love.", ref: "1 Corinthians 16:14 · NIV" },
+  { text: "Two are better than one.", ref: "Ecclesiastes 4:9 · NIV" },
+  { text: "Be devoted to one another in love.", ref: "Romans 12:10 · NIV" },
+  { text: "Therefore encourage one another and build each other up.", ref: "1 Thessalonians 5:11 · NIV" },
+  { text: "Above all, love each other deeply.", ref: "1 Peter 4:8 · NIV" },
+  { text: "And over all these virtues put on love.", ref: "Colossians 3:14 · NIV" },
+  { text: "Be completely humble and gentle; be patient.", ref: "Ephesians 4:2 · NIV" },
+  { text: "Therefore what God has joined together, let no one separate.", ref: "Matthew 19:6 · NIV" },
+  { text: "Be kind and compassionate to one another.", ref: "Ephesians 4:32 · NIV" },
+  { text: "Rejoice with those who rejoice; mourn with those who mourn.", ref: "Romans 12:15 · NIV" },
+  { text: "Let all that you do be done in love.", ref: "1 Corinthians 16:14 · NIV" },
+  { text: "A friend loves at all times.", ref: "Proverbs 17:17 · NIV" },
+  { text: "Plans fail for lack of counsel, but with many advisers they succeed.", ref: "Proverbs 15:22 · NIV" },
+  { text: "Carry each other’s burdens.", ref: "Galatians 6:2 · NIV" },
+  { text: "Be devoted to one another in love. Honor one another above yourselves.", ref: "Romans 12:10 · NIV" },
+  { text: "Let the peace of Christ rule in your hearts.", ref: "Colossians 3:15 · NIV" },
+  { text: "Do to others as you would have them do to you.", ref: "Luke 6:31 · NIV" },
+  { text: "Let us consider how we may spur one another on toward love and good deeds.", ref: "Hebrews 10:24 · NIV" },
+  { text: "Walk in the way of love, just as Christ loved us.", ref: "Ephesians 5:2 · NIV" },
+  { text: "A gentle answer turns away wrath.", ref: "Proverbs 15:1 · NIV" },
+  { text: "Love each other as I have loved you.", ref: "John 15:12 · NIV" },
+  { text: "Be joyful in hope, patient in affliction, faithful in prayer.", ref: "Romans 12:12 · NIV" },
+  { text: "Above all, clothe yourselves with love.", ref: "Colossians 3:14 · NIV" },
+  { text: "Let your conversation be always full of grace.", ref: "Colossians 4:6 · NIV" },
+  { text: "Encourage one another and build each other up.", ref: "1 Thessalonians 5:11 · NIV" },
+  { text: "Whoever walks in integrity walks securely.", ref: "Proverbs 10:9 · NIV" },
+  { text: "Be faithful in prayer.", ref: "Romans 12:12 · NIV" },
+  { text: "The fruit of the Spirit is love, joy, peace, forbearance, kindness, goodness, faithfulness.", ref: "Galatians 5:22 · NIV" },
+  { text: "If either of them falls down, one can help the other up.", ref: "Ecclesiastes 4:10 · NIV" },
+  { text: "Submit to one another out of reverence for Christ.", ref: "Ephesians 5:21 · NIV" },
+  { text: "Love must be sincere.", ref: "Romans 12:9 · NIV" },
+  { text: "Let us not love with words or speech but with actions and in truth.", ref: "1 John 3:18 · NIV" },
+  { text: "Be patient, bearing with one another in love.", ref: "Ephesians 4:2 · NIV" },
+  { text: "A cord of three strands is not quickly broken.", ref: "Ecclesiastes 4:12 · NIV" },
+  { text: "The Lord is gracious and compassionate, slow to anger and rich in love.", ref: "Psalm 145:8 · NIV" },
+  { text: "Commit to the Lord whatever you do.", ref: "Proverbs 16:3 · NIV" },
+  { text: "May the God of hope fill you with all joy and peace as you trust in him.", ref: "Romans 15:13 · NIV" },
+  { text: "Whatever you do, work at it with all your heart.", ref: "Colossians 3:23 · NIV" },
+  { text: "Let the peace of Christ rule in your hearts.", ref: "Colossians 3:15 · NIV" },
+  { text: "The greatest of these is love.", ref: "1 Corinthians 13:13 · NIV" },
+  { text: "Be quick to listen, slow to speak and slow to become angry.", ref: "James 1:19 · NIV" },
+  { text: "Encourage one another daily.", ref: "Hebrews 3:13 · NIV" },
+  { text: "God is love.", ref: "1 John 4:8 · NIV" },
+  { text: "Let us love one another, for love comes from God.", ref: "1 John 4:7 · NIV" },
+  { text: "The Lord bless you and keep you.", ref: "Numbers 6:24 · NIV" },
+  { text: "Trust in the Lord with all your heart.", ref: "Proverbs 3:5 · NIV" },
+  { text: "Be strong and courageous.", ref: "Joshua 1:9 · NIV" },
+  { text: "In humility value others above yourselves.", ref: "Philippians 2:3 · NIV" },
+  { text: "Whatever is true, whatever is noble, whatever is right ... think about such things.", ref: "Philippians 4:8 · NIV" },
+  { text: "And over all these virtues put on love.", ref: "Colossians 3:14 · NIV" },
+  { text: "Let everything you do be done in love.", ref: "1 Corinthians 16:14 · NIV" },
+  { text: "The Lord is my shepherd, I lack nothing.", ref: "Psalm 23:1 · NIV" },
+  { text: "May the Lord make your love increase and overflow for each other.", ref: "1 Thessalonians 3:12 · NIV" },
+  { text: "Show proper respect to everyone, love the family of believers.", ref: "1 Peter 2:17 · NIV" },
+  { text: "Be merciful, just as your Father is merciful.", ref: "Luke 6:36 · NIV" },
+  { text: "Above all, love each other deeply.", ref: "1 Peter 4:8 · NIV" },
+  { text: "The Lord gives wisdom.", ref: "Proverbs 2:6 · NIV" },
+  { text: "Let your light shine before others.", ref: "Matthew 5:16 · NIV" },
+  { text: "Rejoice always, pray continually, give thanks in all circumstances.", ref: "1 Thessalonians 5:16–18 · NIV" }
+];
+
 const mysteryPrompts = [
   { topic: "Relationship Preferences", prompt: "Ask your partner something they wish their future spouse would do for them often." },
   { topic: "Childhood & Memories", prompt: "Ask your partner about a childhood memory that still makes them smile." },
@@ -212,44 +295,150 @@ const mysteryPrompts = [
   { topic: "Sacrifice & Generosity", prompt: "Ask your partner what a healthy, loving sacrifice in marriage might look like in everyday life." },
   { topic: "Humor", prompt: "Ask your partner what kind of humor always gets them, even when they're in a bad mood." },
   { topic: "Life Priorities", prompt: "Ask your partner which three priorities they'd want to protect even during a very busy season of life." }
+  ,
+  { topic: "Marriage Expectations", prompt: "Ask your partner what they hope their future spouse will consistently do to help them feel loved." },
+  { topic: "Relationship Boundaries", prompt: "Ask your partner what personal boundary they believe is especially important to respect in a serious relationship." },
+  { topic: "Worries About Marriage", prompt: "Ask your partner what part of marriage feels most intimidating or uncertain to them, and why." },
+  { topic: "Emotional Needs", prompt: "Ask your partner what they would want a future spouse to understand about how they receive comfort." },
+  { topic: "Affection & Desire", prompt: "Ask your partner what kinds of everyday affection help them feel close to someone." },
+  { topic: "Conflict Boundaries", prompt: "Ask your partner what behaviors they believe should be off-limits during an argument, even when emotions are high." },
+  { topic: "Expectations of Support", prompt: "Ask your partner what support they would hope to receive from a spouse during a stressful season of life." },
+  { topic: "Independence & Togetherness", prompt: "Ask your partner how they would want to balance shared time with personal hobbies and friendships in marriage." },
+  { topic: "Hard Conversations", prompt: "Ask your partner how they would prefer to approach a sensitive topic when they worry it might hurt the other person's feelings." },
+  { topic: "Romantic Initiative", prompt: "Ask your partner how they would like a future spouse to show initiative in keeping romance alive." },
+  { topic: "Faith & Relationship Decisions", prompt: "Ask your partner how they would want to handle a relationship decision where their personal preference and their understanding of Catholic teaching feel in tension." },
+  { topic: "Money Expectations", prompt: "Ask your partner what financial decisions they think a married couple should always discuss together." },
+  { topic: "Household Responsibilities", prompt: "Ask your partner what a fair and loving division of household responsibilities would look like to them." },
+  { topic: "Family Boundaries", prompt: "Ask your partner what boundaries they think a married couple may need with extended family to protect their relationship." },
+  { topic: "Privacy & Openness", prompt: "Ask your partner what privacy they think each spouse should still have in marriage, and what should be openly shared." },
+  { topic: "Apologies & Repair", prompt: "Ask your partner what they need from someone after an apology before they feel ready to move forward." },
+  { topic: "Intimacy & Communication", prompt: "Ask your partner how comfortable they hope to be discussing needs, concerns, and boundaries around physical affection in marriage." },
+  { topic: "Children & Parenting", prompt: "Ask your partner what parenting responsibility or concern they think would be especially important to discuss before marriage." },
+  { topic: "Shared Faith", prompt: "Ask your partner what they would hope a spouse does when the other person is struggling spiritually." },
+  { topic: "Feeling Chosen", prompt: "Ask your partner what actions make them feel intentionally prioritized without needing to be the center of attention all the time." }
+
+  ,
+  { topic: "Feeling Cherished", prompt: "Ask your partner about a small thing someone could do regularly that would make them feel deeply cherished." },
+  { topic: "Feeling Loved", prompt: "Ask your partner what makes them feel most loved when words alone don't quite do it." },
+  { topic: "Romance", prompt: "Ask your partner what a romantic evening would look like if it were designed entirely around what they enjoy." },
+  { topic: "Everyday Affection", prompt: "Ask your partner what kind of everyday affection they hope will remain part of marriage years later." },
+  { topic: "Giving Love", prompt: "Ask your partner what they most hope to give their future spouse emotionally, practically, or spiritually." },
+  { topic: "Receiving Love", prompt: "Ask your partner what kind of loving gesture they find meaningful even if it seems small to someone else." },
+  { topic: "Feeling Pursued", prompt: "Ask your partner what makes them feel intentionally pursued and chosen in a relationship." },
+  { topic: "Romantic Memories", prompt: "Ask your partner what kind of moment would become a treasured romantic memory for them." },
+  { topic: "Thoughtfulness", prompt: "Ask your partner what is a thoughtful gesture they would remember for a long time." },
+  { topic: "Encouragement & Love", prompt: "Ask your partner how a future spouse could encourage them without making them feel pressured to perform." },
+  { topic: "Love Languages", prompt: "Ask your partner which ways of expressing love feel most natural to give, and which they most appreciate receiving." },
+  { topic: "Feeling Safe & Loved", prompt: "Ask your partner what helps them feel accepted and loved even when they're not at their best." },
+  { topic: "Romance Over the Years", prompt: "Ask your partner what they hope courtship and romance will look like after many years of marriage." },
+  { topic: "A Meaningful Date", prompt: "Ask your partner to invent a date that would feel personal and meaningful rather than expensive or elaborate." },
+  { topic: "Small Acts of Service", prompt: "Ask your partner what ordinary task or responsibility would feel especially loving if a spouse helped with it." },
+  { topic: "Being Known", prompt: "Ask your partner what detail about them they'd love a spouse to remember without being reminded." },
+  { topic: "Playful Hypotheticals", prompt: "Ask your partner what fictional world they'd choose for a one-week vacation with you, and what you'd do there." },
+  { topic: "Unexpected Adventure", prompt: "Ask your partner if they had to plan a surprise day for you with only $20, what would they plan?" },
+  { topic: "The Perfect Ordinary Day", prompt: "Ask your partner to design a perfect ordinary day together, including the little details." },
+  { topic: "Absurd Teamwork", prompt: "Ask your partner how they think you would work together if you were contestants on a chaotic game show and had to solve a ridiculous challenge with only three random objects." },
+  { topic: "Alternate Universe", prompt: "Ask your partner how they imagine the two of you might have met in a different century or fictional universe." },
+  { topic: "Personality & Quirks", prompt: "Ask your partner what harmless quirk of theirs they hope a future spouse will find endearing." },
+  { topic: "Shared Traditions", prompt: "Ask your partner what silly or sweet tradition they'd like the two of you to invent." },
+  { topic: "Surprise & Delight", prompt: "Ask your partner whether they prefer surprises or knowing the plan, and what kinds of surprises they actually enjoy." },
+  { topic: "Comfort & Care", prompt: "Ask your partner what you could do to make a hard day feel a little lighter for them." },
+  { topic: "Romance Over Time", prompt: "Ask your partner: What do you hope each spouse will do to keep romance and intentional courtship alive after marriage?" },
+  { topic: "Feeling Cherished", prompt: "Ask your partner: What could a future spouse do regularly that would make you feel cherished, even during an ordinary week?" },
+  { topic: "Feeling Loved", prompt: "Ask your partner: When you feel genuinely loved, what is usually happening—not just what is someone saying?" },
+  { topic: "Romance", prompt: "Ask your partner: What does romance mean to you personally, apart from gifts, anniversaries, or stereotypical date nights?" },
+  { topic: "Everyday Affection", prompt: "Ask your partner: What small forms of affection would you hope remain part of your marriage even when life gets busy?" },
+  { topic: "What I Hope to Give", prompt: "Ask your partner: What kind of husband or wife do you hope to be for your future spouse, especially when they are struggling?" },
+  { topic: "Thoughtfulness", prompt: "Ask your partner: What is a thoughtful gesture someone could make that would show they truly pay attention to who you are?" },
+  { topic: "Feeling Chosen", prompt: "Ask your partner: What makes you feel intentionally chosen without needing constant reassurance or attention?" },
+  { topic: "Romance Over Time", prompt: "Ask your partner: What do you think helps romance stay alive through ordinary routines, responsibilities, and difficult seasons?" },
+  { topic: "Love & Vulnerability", prompt: "Ask your partner: What helps you feel comfortable showing a partner a side of yourself that you usually keep hidden?" },
+  { topic: "Giving & Receiving Love", prompt: "Ask your partner: Is it easier for you to express love or receive it? What do you think shaped that?" },
+  { topic: "A Meaningful Date", prompt: "Ask your partner: Design a date that would make you feel known and cared for, using little or no money. What would you include?" },
+  { topic: "Encouragement", prompt: "Ask your partner: When you doubt yourself, what kind of encouragement from a spouse would help—and what kind might feel unhelpful?" },
+  { topic: "Affection & Boundaries", prompt: "Ask your partner: How would you want spouses to communicate differences in their needs for affection while respecting each other's boundaries?" },
+  { topic: "Small Acts of Service", prompt: "Ask your partner: What ordinary responsibility would feel especially loving if your spouse noticed it and took care of it without being asked?" },
+  { topic: "Love in Difficult Seasons", prompt: "Ask your partner: What would you hope your spouse remembers about your needs when you're stressed, sick, or emotionally drained?" },
+  { topic: "Playful Hypotheticals", prompt: "Ask your partner what roles each of you would take if you had to run a tiny inn in a fantasy world for a month, and what would inevitably go wrong." },
+  { topic: "Unexpected Adventure", prompt: "Ask your partner what spontaneous adventure they would suggest if you had a free day, no responsibilities, and a very small budget." },
+  { topic: "Alternate Universe", prompt: "Ask your partner what kind of people you might be if you met in a completely different era, and how they imagine you would meet." },
+  { topic: "Absurd Teamwork", prompt: "Ask your partner how they think you would handle this situation: you are accidentally put in charge of running a tiny roadside hotel during a storm, with strange guests arriving every hour." },
+  { topic: "The Perfect Ordinary Day", prompt: "Ask your partner: Describe an ordinary day together that would leave you thinking, 'I could be happy living this kind of life.'" },
+  { topic: "Personality & Quirks", prompt: "Ask your partner: What harmless oddity about you would a spouse have to learn to love, and what oddity might you learn to love about them?" },
+  { topic: "Surprise & Delight", prompt: "Ask your partner: Do you feel more loved by a carefully planned gesture or a spontaneous one, and what makes it meaningful?" },
+  { topic: "Shared Traditions", prompt: "Ask your partner: What small tradition could we create that would still make us smile years from now?" },
+  { topic: "Hope for Your Spouse", prompt: "Ask your partner: What is something you hope your future spouse will feel more of because they share their life with you?" },
+  { topic: "Romantic Communication", prompt: "Ask your partner: How comfortable would you want to be telling your spouse exactly what helps you feel desired, appreciated, and close?" },
+  { topic: "Fun & Hypotheticals", prompt: "Ask your partner: If we had to open a tiny business together for one year, what would it be and why?" },
+  { topic: "Childhood & Memories", prompt: "Ask your partner: What is a childhood memory you wish you could step back into for just ten minutes?" },
+  { topic: "Fun & Personality", prompt: "Ask your partner: What is a very specific, slightly ridiculous thing that can instantly improve your mood?" },
+  { topic: "Playfulness", prompt: "Ask your partner: If we were stuck waiting six hours in an airport with no internet, what ridiculous game or challenge would you invent to keep us entertained?" },
+  { topic: "Everyday Life", prompt: "Ask your partner: What would a genuinely satisfying ordinary Saturday look like for you?" },
+  { topic: "Shared Experiences", prompt: "Ask your partner: What is something new you'd love for us to learn or attempt together?" },
+  { topic: "Home & Lifestyle", prompt: "Ask your partner: Would you prefer a home that is often lively with visitors or mostly quiet and private, and why?" },
+  { topic: "Friendship", prompt: "Ask your partner: What makes you feel close to someone even when you haven't spoken for a while?" },
+  { topic: "Dreams & Ambitions", prompt: "Ask your partner: What is something you would regret never trying, even if you were afraid of failing?" },
+  { topic: "Personal Growth", prompt: "Ask your partner: What is one belief or assumption about life that has changed for you in recent years?" },
+  { topic: "Gratitude", prompt: "Ask your partner: Who has influenced the kind of person you want to be, and what did they show you?" },
+  { topic: "Meaning & Purpose", prompt: "Ask your partner: What do you hope people feel after spending time with you?" },
+  { topic: "Communication", prompt: "Ask your partner: What makes a difficult conversation feel safe and productive to you?" },
+  { topic: "Emotional Awareness", prompt: "Ask your partner: What feeling is hardest for you to explain to other people?" },
+  { topic: "Handling Stress", prompt: "Ask your partner: What are the signs that you're getting overwhelmed, even if you haven't said so out loud?" },
+  { topic: "Decision-Making", prompt: "Ask your partner: When you have a big decision to make, what helps you think clearly and feel at peace with it?" },
+  { topic: "Values & Character", prompt: "Ask your partner: Which virtue do you most want to grow in, and what makes it difficult to practice?" },
+  { topic: "Family & Community", prompt: "Ask your partner: What role would you ideally like extended family and close friends to play in your married life?" },
+  { topic: "Trust & Honesty", prompt: "Ask your partner: What small, everyday behavior builds trust more than people might realize?" },
+  { topic: "Hope & Resilience", prompt: "Ask your partner: What helps you keep going when progress is slow and you can't yet see the outcome?" },
+  { topic: "Traditions", prompt: "Ask your partner: What tradition from your own life would you like to carry into the future, and what new one would you invent?" },
+  { topic: "Faith & Spirituality", prompt: "Ask your partner: What has most helped your faith become personal rather than simply something you believe intellectually?" },
+  { topic: "Marriage Compatibility", prompt: "Ask your partner: When you imagine a healthy Catholic marriage, what do you think the two spouses should be able to count on each other for every day?" },
+  { topic: "Emotional Connection", prompt: "Ask your partner: When you're having a difficult day, do you usually want comfort, practical help, space, or a mix of these?" },
+  { topic: "Faith in Daily Life", prompt: "Ask your partner: What is one way you'd like faith to shape the ordinary rhythm of your future home?" },
+  { topic: "Affection & Romance", prompt: "Ask your partner: What is a small, thoughtful gesture that makes you feel especially cared for?" },
+  { topic: "Feeling Adored", prompt: "Ask your partner what makes them feel admired for who they are, rather than only appreciated for what they do." },
+  { topic: "Everyday Romance", prompt: "Ask your partner what an ordinary weekday could include to make it feel a little romantic." },
+  { topic: "Words of Affection", prompt: "Ask your partner what kind of compliment or loving words tend to stay with them long after they're said." },
+  { topic: "Initiating Affection", prompt: "Ask your partner what helps them feel comfortable initiating affection instead of always waiting for the other person." },
+  { topic: "Feeling Desired", prompt: "Ask your partner what respectful, non-pressuring actions help them feel wanted and attractive to a partner." },
+  { topic: "Romantic Thoughtfulness", prompt: "Ask your partner what detail about their tastes or interests they'd love a spouse to remember when planning something special." },
+  { topic: "Comforting Affection", prompt: "Ask your partner what kinds of affection feel comforting when they're overwhelmed, and whether that changes when they're upset." },
+  { topic: "Romantic Surprises", prompt: "Ask your partner about a surprise that would delight them—and what kinds of surprises might make them uncomfortable." },
+  { topic: "Being Appreciated", prompt: "Ask your partner how they most like to be thanked for the effort they put into a relationship." },
+  { topic: "Affection in Public", prompt: "Ask your partner what kinds of affection in public feel sweet to them and what they'd rather keep private." },
+  { topic: "Private Moments", prompt: "Ask your partner what small private ritual could help the two of you feel close even in a crowded or busy season." },
+  { topic: "Romantic Initiative", prompt: "Ask your partner what taking initiative in romance looks like to them beyond planning dates or buying gifts." },
+  { topic: "Feeling Understood", prompt: "Ask your partner what a spouse could notice about their mood or needs that would make them feel deeply understood." },
+  { topic: "Affection & Reassurance", prompt: "Ask your partner what kind of reassurance feels sincere to them when they're having an insecure day." },
+  { topic: "Romance on a Budget", prompt: "Ask your partner to plan a romantic evening that costs almost nothing but feels personal and memorable." },
+  { topic: "Love During Busy Seasons", prompt: "Ask your partner what small acts of affection would help them feel connected when both of you have very little free time." },
+  { topic: "Celebrating Each Other", prompt: "Ask your partner what achievement or personal milestone they'd love a spouse to celebrate in a meaningful way." },
+  { topic: "Receiving Compliments", prompt: "Ask your partner what makes a compliment feel genuine rather than generic or obligatory." },
+  { topic: "Tenderness", prompt: "Ask your partner what tenderness looks like to them in everyday married life." },
+  { topic: "Repair Through Affection", prompt: "Ask your partner how affection can help reconnect after tension—and when they'd prefer a conversation or space first." },
+  { topic: "Courtship After Marriage", prompt: "Ask your partner what dating each other should look like once a couple is married and life becomes more routine." },
+  { topic: "Feeling Special", prompt: "Ask your partner what makes a gesture feel personal, as though it could only have come from someone who truly knows them." },
+  { topic: "Love in Small Moments", prompt: "Ask your partner about a tiny moment of affection or kindness that could turn a difficult day around." },
+  { topic: "Romantic Memories", prompt: "Ask your partner what kind of moment they'd hope to look back on years later and think, 'That was so us.'" },
+  { topic: "Expressing Love Differently", prompt: "Ask your partner how they would want to handle it if you naturally expressed love in different ways." },
+  { topic: "Affection & Comfort", prompt: "Ask your partner how they'd like to communicate when they want closeness, but not necessarily advice or a solution." },
+  { topic: "Admiration in Marriage", prompt: "Ask your partner what qualities in a spouse they hope to keep noticing and admiring even after many years together." },
+  { topic: "A Personal Love Letter", prompt: "Ask your partner what they would most hope to hear in a heartfelt letter from their future spouse." },
+  { topic: "Giving Love Well", prompt: "Ask your partner how they hope to learn to love someone well when that person's needs differ from their own." }
 ];
 
 const curiosityQuestions = [
-  { category: "Fun & Personality", question: "What is a very specific, slightly ridiculous thing that can instantly improve your mood?" },
-  { category: "Childhood & Memories", question: "What is a childhood memory you wish you could step back into for just ten minutes?" },
-  { category: "Faith & Spirituality", question: "What has most helped your faith become personal rather than simply something you believe intellectually?" },
-  { category: "Marriage Compatibility", question: "When you imagine a healthy Catholic marriage, what do you think the two spouses should be able to count on each other for every day?" },
-  { category: "Emotional Connection", question: "When you're having a difficult day, do you usually want comfort, practical help, space, or a mix of these?" },
-  { category: "Fun & Hypotheticals", question: "If we had to open a tiny business together for one year, what would it be and why?" },
-  { category: "Communication", question: "What makes a difficult conversation feel safe and productive to you?" },
-  { category: "Faith in Daily Life", question: "What is one way you'd like faith to shape the ordinary rhythm of your future home?" },
-  { category: "Dreams & Ambitions", question: "What is something you would regret never trying, even if you were afraid of failing?" },
-  { category: "Affection & Romance", question: "What is a small, thoughtful gesture that makes you feel especially cared for?" },
-  { category: "Values & Character", question: "Which virtue do you most want to grow in, and what makes it difficult to practice?" },
-  { category: "Family & Community", question: "What role would you ideally like extended family and close friends to play in your married life?" },
+  { category: "Healthy Relationships", question: "What is a sign of a healthy relationship?" },
   { category: "Conflict & Repair", question: "After a disagreement, what helps you feel ready to reconnect?" },
-  { category: "Everyday Life", question: "What would a genuinely satisfying ordinary Saturday look like for you?" },
   { category: "Catholic Marriage", question: "How do you think a couple can make decisions together while still respecting each other's conscience and responsibilities?" },
-  { category: "Personal Growth", question: "What is one belief or assumption about life that has changed for you in recent years?" },
-  { category: "Playfulness", question: "What completely unnecessary competition do you think we'd have way too much fun taking seriously?" },
   { category: "Money & Stewardship", question: "What did your upbringing teach you, positively or negatively, about money?" },
   { category: "Marriage & Family", question: "What does being a good teammate in marriage look like when both people are tired or stressed?" },
   { category: "Prayer", question: "What kind of prayer together would feel natural and sustainable for you as a couple?" },
-  { category: "Friendship", question: "What makes you feel close to someone even when you haven't spoken for a while?" },
-  { category: "Emotional Awareness", question: "What feeling is hardest for you to explain to other people?" },
-  { category: "Home & Lifestyle", question: "Would you prefer a home that is often lively with visitors or mostly quiet and private, and why?" },
   { category: "Faith & Discernment", question: "When facing an important decision, how do you distinguish your own preference from what you believe God may be asking of you?" },
-  { category: "Shared Experiences", question: "What is something new you'd love for us to learn or attempt together?" },
-  { category: "Trust & Honesty", question: "What small, everyday behavior builds trust more than people might realize?" },
-  { category: "Handling Stress", question: "What are the signs that you're getting overwhelmed, even if you haven't said so out loud?" },
-  { category: "Catholic Life", question: "Which part of the liturgical year or a Catholic feast day would you most enjoy making special in a future home?" },
   { category: "Romantic Expectations", question: "What helps you feel that a relationship is being intentionally nurtured rather than simply maintained?" },
-  { category: "Meaning & Purpose", question: "What do you hope people feel after spending time with you?" },
   { category: "Family & Parenthood", question: "What value would you most want to pass on to children, if you were called to parenthood?" },
   { category: "Forgiveness", question: "How do you understand the difference between forgiving someone and rebuilding trust with them?" },
   { category: "Work & Vocation", question: "What would a good balance between meaningful work, rest, faith, and family look like to you?" },
   { category: "Personal Space", question: "How can two people stay close while also giving each other healthy room to grow individually?" },
-  { category: "Traditions", question: "What tradition from your own life would you like to carry into the future, and what new one would you invent?" },
   { category: "Catholic Marriage", question: "What do you think helps spouses remain united when they approach a serious moral or practical question differently?" },
   { category: "Listening & Understanding", question: "What is something you wish people understood before giving you advice?" },
   { category: "Hopes for the Future", question: "If life went well in a quiet, ordinary way over the next five years, what would you hope it looked like?" },
@@ -271,10 +460,44 @@ const curiosityQuestions = [
   { category: "Faith & Community", question: "How important is it to you that a future spouse shares not only your faith, but also participates in a faith community with you?" },
   { category: "Intimacy & Trust", question: "What helps you feel safe being honest about a need or insecurity in a close relationship?" },
   { category: "Aspirations for Marriage", question: "What do you hope marriage would help you become—not just what do you hope to receive from it?" },
-  { category: "Decision-Making", question: "When you have a big decision to make, what helps you think clearly and feel at peace with it?" },
   { category: "Play & Adventure", question: "Would you rather plan a trip down to the details or arrive with a loose plan and discover things as you go?" },
-  { category: "Gratitude", question: "Who has influenced the kind of person you want to be, and what did they show you?" },
-  { category: "Hope & Resilience", question: "What helps you keep going when progress is slow and you can't yet see the outcome?" }
+  { category: "Marriage Expectations", question: "What is something you would want your future spouse to do for you often, even after the early excitement of a relationship settles?" },
+  { category: "Relationship Boundaries", question: "What boundary would help you feel respected and emotionally safe in a serious relationship?" },
+  { category: "Worries About Marriage", question: "What is one concern or fear about marriage that you would want a future spouse to take seriously rather than dismiss?" },
+  { category: "Emotional Needs", question: "When you're hurt or discouraged, what do you most hope a spouse will understand about the way you need to be loved?" },
+  { category: "Affection & Desire", question: "What kinds of affection make you feel loved, and how would you want to communicate if your needs differed from your spouse's?" },
+  { category: "Conflict & Boundaries", question: "What behaviors should never become normal during marital conflict, even when both people are frustrated?" },
+  { category: "Support & Sacrifice", question: "How would you hope you and your spouse would respond when one person's needs temporarily require more time, energy, or sacrifice?" },
+  { category: "Independence & Togetherness", question: "How much individual time, friendship, and personal space do you think spouses need to maintain a healthy relationship?" },
+  { category: "Hard Conversations", question: "What would help you feel safe bringing up a difficult or potentially disappointing truth with your future spouse?" },
+  { category: "Catholic Conscience & Decisions", question: "If you and your spouse sincerely disagreed about how to apply Catholic teaching to a practical decision, how would you hope to work through it?" },
+  { category: "Money & Transparency", question: "What financial information or decisions do you believe spouses should be transparent about with each other?" },
+  { category: "Household Partnership", question: "How should a couple handle household work if one spouse feels the division has become unfair?" },
+  { category: "Extended Family Boundaries", question: "How would you want a married couple to handle it if a parent or relative repeatedly crossed a boundary?" },
+  { category: "Privacy & Trust", question: "Where do you think the balance should be between personal privacy and openness between spouses?" },
+  { category: "Apologies & Forgiveness", question: "When trust has been hurt, what would you need to see over time—not just hear—to believe real repair is happening?" },
+  { category: "Physical Affection & Communication", question: "How important is it to you that spouses can discuss physical affection, comfort, and boundaries honestly without shame or pressure?" },
+  { category: "Children & Family Planning", question: "What questions about children, parenting, or openness to life would you want a couple to discuss seriously before marriage?" },
+  { category: "Spiritual Support", question: "If you were going through a period of spiritual dryness, what would supportive love from your spouse look like without feeling pressured or judged?" },
+  { category: "Feeling Prioritized", question: "What does it look like for a spouse to make you feel important while still balancing work, family, friends, and other responsibilities?" },
+  { category: "Roles & Responsibilities", question: "Which expectations about marital roles would you want to discuss explicitly rather than assume you both share?" },
+  { category: "Decision-Making", question: "For which kinds of decisions would you expect a couple to seek agreement, and where might it be okay for each spouse to decide individually?" },
+  { category: "Personal Growth", question: "How would you want a spouse to respond if you were trying to change a difficult habit and made progress slowly?" },
+  { category: "Commitment During Difficulty", question: "What actions would help you feel that your spouse remains committed to working through a hard season with you?" },
+  { category: "Expectations of Initiation", question: "In what areas of a relationship would you appreciate your spouse taking initiative instead of always waiting for you to ask?" },
+  { category: "Feeling Cherished", question: "What makes you feel cherished in a way that goes beyond simply knowing someone loves you?" },
+  { category: "Romance", question: "What does romance mean to you personally, and which parts of the usual idea of romance matter least to you?" },
+  { category: "Love in Ordinary Life", question: "What repeated, ordinary action would make you feel loved over the course of a normal week?" },
+  { category: "Giving Affection", question: "How do you naturally show affection, and how might you grow in expressing it in ways a spouse understands?" },
+  { category: "Receiving Affection", question: "Is it easier for you to ask for affection or to offer it first? What do you think influences that?" },
+  { category: "Romance Through Change", question: "How do you hope romance will change as a relationship moves from courtship into marriage, without disappearing?" },
+  { category: "Feeling Desired", question: "What helps you feel wanted and attractive while still feeling respected and free to express your boundaries?" },
+  { category: "Emotional Intimacy", question: "What helps affection feel emotionally meaningful to you rather than just a habit or gesture?" },
+  { category: "Thoughtful Love", question: "Would you feel more loved by a spouse who remembers little details, anticipates practical needs, or openly expresses appreciation? Why?" },
+  { category: "Affection During Stress", question: "When you're stressed, does affection usually help you feel connected, or do you first need space or practical support?" },
+  { category: "Romance & Initiative", question: "How would you want both spouses to share responsibility for keeping romance alive instead of leaving it to one person?" },
+  { category: "Feeling Appreciated", question: "What effort do you hope a spouse notices and appreciates, even when it seems small or routine?" },
+  { category: "Love & Vulnerability", question: "What makes it easier for you to receive love without feeling that you have to earn it or immediately give something back?" }
 ];
 
 // Small deterministic pseudo-random generator. Same seed = same sequence.
@@ -314,10 +537,13 @@ function formatEasternDate() {
     timeZone: "America/New_York", weekday: "long", month: "long", day: "numeric"
   }).format(new Date());
 }
-function renderDailyContent() {
-  const day = easternDateKey();
-  document.getElementById("today-date").textContent = formatEasternDate() + " · Eastern Time";
-  const dailyMystery = shuffleWithSeed(mysteryPrompts, "mystery-" + day).slice(0, 3);
+let currentMystery = [];
+let currentCuriosity = null;
+let mysteryRefreshCount = 0;
+let curiosityRefreshCount = 0;
+
+function renderMysteryCards(dailyMystery) {
+  currentMystery = dailyMystery.slice();
   const cardRoot = document.getElementById("mystery-cards");
   cardRoot.innerHTML = "";
   dailyMystery.forEach((item, index) => {
@@ -348,20 +574,89 @@ function renderDailyContent() {
     });
     cardRoot.appendChild(button);
   });
-  const dailyQuestion = shuffleWithSeed(curiosityQuestions, "curiosity-" + day)[0];
-  document.getElementById("curiosity-category").textContent = dailyQuestion.category;
-  document.getElementById("curiosity-question").textContent = dailyQuestion.question;
+}
+function renderCuriosityQuestion(item) {
+  currentCuriosity = item;
+  document.getElementById("curiosity-category").textContent = item.category;
+  document.getElementById("curiosity-question").textContent = item.question;
+}
+function renderDailyContent() {
+  const day = easternDateKey();
+  mysteryRefreshCount = 0;
+  curiosityRefreshCount = 0;
+  document.getElementById("today-date").textContent = formatEasternDate() + " · Eastern Time";
+  const dailyVerse = shuffleWithSeed(bibleVerses, "verse-" + day)[0];
+  document.getElementById("verse-text").textContent = "“" + dailyVerse.text + "”";
+  document.getElementById("verse-ref").textContent = dailyVerse.ref;
+  renderMysteryCards(shuffleWithSeed(mysteryPrompts, "mystery-" + day).slice(0, 3));
+  renderCuriosityQuestion(shuffleWithSeed(curiosityQuestions, "curiosity-" + day)[0]);
+}
+
+document.getElementById("refresh-activity-01").addEventListener("click", () => {
+  const day = easternDateKey();
+  const used = new Set(currentMystery.map(item => item.prompt));
+  const available = mysteryPrompts.filter(item => !used.has(item.prompt));
+  mysteryRefreshCount += 1;
+  const alternatives = shuffleWithSeed(available, `manual-mystery-${day}-${mysteryRefreshCount}`).slice(0, 3);
+  if (alternatives.length === 3) renderMysteryCards(alternatives);
+});
+document.getElementById("refresh-activity-02").addEventListener("click", () => {
+  const day = easternDateKey();
+  const available = curiosityQuestions.filter(item => !currentCuriosity || item.question !== currentCuriosity.question);
+  curiosityRefreshCount += 1;
+  const next = shuffleWithSeed(available, `manual-curiosity-${day}-${curiosityRefreshCount}`)[0];
+  if (next) renderCuriosityQuestion(next);
+});
+
+function getNextEasternMidnight() {
+  const now = Date.now();
+  const currentDay = easternDateKey();
+  let low = now;
+  let high = now + 30 * 60 * 60 * 1000;
+  while (high - low > 1000) {
+    const mid = Math.floor((low + high) / 2);
+    if (easternDateKeyForTimestamp(mid) === currentDay) low = mid;
+    else high = mid;
+  }
+  return high;
+}
+function easternDateKeyForTimestamp(timestamp) {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone: "America/New_York", year: "numeric", month: "2-digit", day: "2-digit"
+  }).formatToParts(new Date(timestamp));
+  const value = Object.fromEntries(parts.map(p => [p.type, p.value]));
+  return `${value.year}-${value.month}-${value.day}`;
+}
+let midnightTarget = getNextEasternMidnight();
+function updateCountdown() {
+  let remaining = midnightTarget - Date.now();
+  if (remaining <= 0) {
+    const oldDay = displayedDay;
+    displayedDay = easternDateKey();
+    renderDailyContent();
+    midnightTarget = getNextEasternMidnight();
+    remaining = midnightTarget - Date.now();
+  }
+  const totalSeconds = Math.max(0, Math.floor(remaining / 1000));
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+  document.getElementById("countdown-clock").textContent =
+    `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
 }
 renderDailyContent();
-// If the page stays open across midnight, check the Eastern date periodically.
 let displayedDay = easternDateKey();
+updateCountdown();
+// Keep the timer current and refresh daily selections if the page crosses Eastern midnight.
 setInterval(() => {
   const currentDay = easternDateKey();
   if (currentDay !== displayedDay) {
     displayedDay = currentDay;
     renderDailyContent();
+    midnightTarget = getNextEasternMidnight();
   }
-}, 30000);
+  updateCountdown();
+}, 1000);
 </script>
 </body>
 </html>
